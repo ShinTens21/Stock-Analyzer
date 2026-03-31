@@ -10,11 +10,11 @@ tickers = ["AAPL", "MSFT", "NVDA", "TSLA","GOOGL", "AMZN", "META", "PLTR", "NFLX
 start_date = "2010-01-01"
 end_date = datetime.today().strftime("%Y-%m-%d")
 
-mysql_user = "root"
-mysql_password = "Az14gamer123%"
-mysql_host = "localhost"
-mysql_port = "3306"
-mysql_database = "stocks_database"
+mysql_user = st.secrets["mysql_user"]
+mysql_password = st.secrets["mysql_password"]
+mysql_host = st.secrets["mysql_host"]
+mysql_port = st.secrets["mysql_port"]
+mysql_database = st.secrets["mysql_database"]
 
 # =========================
 # 2. DOWNLOAD DATA

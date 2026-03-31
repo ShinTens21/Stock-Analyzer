@@ -1,5 +1,6 @@
 streamlit
 pandas
 SQLAlchemy
-PyMySQL
+PyMySQL[rsa]
 plotly
+cryptography

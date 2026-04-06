@@ -4,3 +4,4 @@ SQLAlchemy
 PyMySQL[rsa]
 plotly
 cryptography
+yfinance

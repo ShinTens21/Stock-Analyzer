@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine, text
-from datetime import datetime
 
 # =========================
 # 1. MYSQL CONNECTION
@@ -26,6 +25,8 @@ if missing:
 engine = create_engine(
     f"mysql+pymysql://{MYSQLUSER}:{MYSQLPASSWORD}@{MYSQLHOST}:{MYSQLPORT}/{MYSQLDATABASE}"
 )
+
+TABLE_NAME = "stock_recommendations"
 
 # =========================
 # 2. LOAD PRICE DATA
@@ -140,8 +141,7 @@ latest["action"] = latest.apply(get_action, axis=1)
 latest["reason"] = latest.apply(get_reason, axis=1)
 latest["justification"] = latest.apply(get_justification, axis=1)
 
-# IMPORTANT:
-# use the latest market date from stock_prices, not datetime.today()
+# use the latest market date from stock_prices
 latest["recommendation_date"] = latest["trade_date"]
 
 recommendations = latest[
@@ -157,27 +157,26 @@ if recommendations.empty:
 # =========================
 # 6. WRITE TO DATABASE
 # =========================
-with engine.begin() as conn:
-    # remove old recommendation rows for the same recommendation date
-    rec_date = recommendations["recommendation_date"].max()
+rec_date = recommendations["recommendation_date"].max()
 
+with engine.begin() as conn:
     conn.execute(
-        text("DELETE FROM recommendations WHERE recommendation_date = :rec_date"),
+        text(f"DELETE FROM {TABLE_NAME} WHERE recommendation_date = :rec_date"),
         {"rec_date": rec_date.to_pydatetime()}
     )
 
-recommendations.to_sql("recommendations", engine, if_exists="append", index=False)
-print(f"Inserted {len(recommendations)} rows into recommendations")
+recommendations.to_sql(TABLE_NAME, engine, if_exists="append", index=False)
+print(f"Inserted {len(recommendations)} rows into {TABLE_NAME}")
 
 # =========================
 # 7. VERIFY INSERT
 # =========================
 with engine.connect() as conn:
     latest_db_date = conn.execute(
-        text("SELECT MAX(recommendation_date) FROM recommendations")
+        text(f"SELECT MAX(recommendation_date) FROM {TABLE_NAME}")
     ).scalar()
     total_rows = conn.execute(
-        text("SELECT COUNT(*) FROM recommendations")
+        text(f"SELECT COUNT(*) FROM {TABLE_NAME}")
     ).scalar()
 
 print("Latest recommendation_date in DB:", latest_db_date)
